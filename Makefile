@@ -90,10 +90,10 @@ svn: swig apr apr-util sqlite serf openssl
 	$(MAKE) install; $(MAKE) install-swig-pl
 	touch $@
 
-curl:
+curl: openssl
 	tar xf ${SRC_DIR}/curl-*.tar.*
 	cd curl-*; \
-	./configure --prefix=${DST_DIR}; \
+	./configure --prefix=${DST_DIR} --with-ssl=${DST_DIR}; \
 	$(MAKE); $(MAKE) install
 	touch $@
 
