@@ -6,7 +6,7 @@ export PATH				:= ${DST_DIR}/bin:${PATH}
 export LD_LIBRARY_PATH	:= ${DST_DIR}/lib:${LD_LIBRARY_PATH}
 
 SRCS	= \
-	https://downloads.apache.org//apr/apr-1.7.0.tar.gz \
+	https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz \
 	https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.bz2 \
 	https://curl.haxx.se/download/curl-7.73.0.tar.bz2 \
 	https://github.com/git/git/archive/v2.29.2.tar.gz \
@@ -17,7 +17,7 @@ SRCS	= \
 	http://prdownloads.sourceforge.net/scons/scons-local-3.1.2.tar.gz \
 	https://archive.apache.org/dist/serf/serf-1.3.9.tar.bz2 \
 	https://www.sqlite.org/2021/sqlite-autoconf-3340100.tar.gz \
-	https://ftp.jaist.ac.jp/pub/apache/subversion/subversion-1.14.0.tar.gz \
+	https://archive.apache.org/dist/subversion/subversion-1.14.0.tar.gz \
 	http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz
 
 para:
@@ -26,7 +26,12 @@ para:
 all: svn git
 
 download:
-	for url in $(SRCS); do wget -P $(SRC_DIR) $$url; done
+	for url in $(SRCS); do \
+		if [ ! -e $(SRC_DIR)/`basename $$url` ]; then wget -P $(SRC_DIR) --no-check-certificate $$url; fi; \
+	done
+	for url in $(SRCS); do \
+		if [ ! -e $(SRC_DIR)/`basename $$url` ]; then echo "Failed:" `basename $$url`; fi; \
+	done
 
 perl:
 	tar xf ${SRC_DIR}/perl-*.tar.*
@@ -71,7 +76,7 @@ sqlite:
 	touch $@
 
 serf: openssl apr apr-util
-	mkdir scons-1; cd scons-1; tar xf ${SRC_DIR}/scons-*.tar.*
+	source=`cd $(SRC_DIR); pwd`; mkdir scons-1; cd scons-1; tar xf $$source/scons-*.tar.*
 	tar xf ${SRC_DIR}/serf-*.tar.*
 	cd serf-*; \
 	../scons-1/scons.py APR=${DST_DIR} APU=${DST_DIR} OPENSSL=${DST_DIR} PREFIX=${DST_DIR}; \
@@ -105,7 +110,7 @@ openssl:
 	touch $@
 
 git: curl openssl
-	tar xf ${SRC_DIR}/git-*.tar.*
+	tar xf ${SRC_DIR}/v*.tar.*
 	cd git-*; \
 	$(MAKE) prefix=${DST_DIR} PERL_PATH=${DST_DIR}/bin/perl all; \
 	$(MAKE) prefix=${DST_DIR} PERL_PATH=${DST_DIR}/bin/perl install
